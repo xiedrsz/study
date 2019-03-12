@@ -1,0 +1,14 @@
+{
+	"name": "fam",
+	"version": "1.0.0",
+	"description": "Auto Create Fron",
+	"keywords": [
+		"fam"
+	],
+	"preferGlobal": true,
+	"author": "xiedr",
+	"license": "ISC",
+	"bin": {
+		"fam": "index.js"
+	}
+}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+        
+        #container {
+            width: 800px;
+            height: 400px;
+            margin: 8px auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container"> </div>
+
+    <script type="text/javascript" src="../Flotr2-master/flotr2.min.js"></script>
+
+    <script type="text/javascript">
+        (function basic_pie(container) {
+            var
+                d1 = [[0, 30860.16]],
+                d2 = [[0, 14900.18]],
+                d3 = [[0, 2773.68]],
+                d4 = [[0, 500]],
+                data = [{
+                    data: d1,
+                    label: '储蓄'
+                }, {
+                    data: d2,
+                    label: '基金'
+                }, {
+                    data: d3,
+                    label: '股票',
+                    pie: {
+                        explode: 50
+                    }
+                }, {
+                    data: d4,
+                    label: '债权'
+                }],
+                option = {
+                    HtmlText: false,
+                    grid: {
+                        verticalLines: false,
+                        horizontalLines: false
+                    },
+                    xaxis: {
+                        showLabels: false
+                    },
+                    yaxis: {
+                        showLabels: false
+                    },
+                    pie: {
+                        show: true,
+                        explode: 6
+                    },
+                    mouse: {
+                        track: true
+                    },
+                    legend: {
+                        position: 'se',
+                        backgroundColor: '#D2E8FF'
+                    }
+                },
+                graph = Flotr.draw(container, data, option);
+
+        })(document.getElementById("container"));
+    </script>
+
+</body>
+
+</html>

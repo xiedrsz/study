@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+/**
+ * 全局样式
+ */
+
+$option: (bdkr: 14px);
+.btn {
+    @include button();
+}

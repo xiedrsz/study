@@ -1,0 +1,31 @@
+CACHE MANIFEST
+
+# 2016-12-08 V1.0.0
+
+# CACHE:
+
+/assets/css/app.min.css
+/libs/require/require.js
+/libs/vue/vue.js
+/libs/vue/vue-resource.min.js
+/libs/require/xvue.js
+/libs/require/text.js
+/libs/vue/vue-router.js
+/libs/mock-min.js
+/libs/extend.min.js
+/components/vux/js/scroller.js
+/components/vux/xHeader.xvue
+/components/vux/xScroller.xvue
+/config/main.js
+/config/router.js
+/config/setting.js
+/mocks/mockData.js
+/modules/home.xvue
+/modules/account.xvue
+/table/expense.js
+
+
+NETWORK:
+*
+
+# FALLBACK:

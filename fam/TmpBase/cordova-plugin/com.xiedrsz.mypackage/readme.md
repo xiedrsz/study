@@ -1,0 +1,1 @@
+# Template of cordova plugin for Android

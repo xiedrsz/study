@@ -1,0 +1,1 @@
+define("a",[],function(){"use strict";var n={};return n.log=function(){console.log("a is OK")},n}),define("b",[],function(){"use strict";var n={};return n.type=function(){console.log("b is typing")},n}),define("c",["a","b"],function(n,t){"use strict";return{a:n,b:t}});

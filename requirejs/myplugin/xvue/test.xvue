@@ -1,0 +1,12 @@
+<template>
+	<div id="kkkk">{{ msg }}</div>
+</template>
+<script>
+	export default {
+		data: function () {
+			return {
+				msg: 'Hello World!!'
+			}
+		}
+	}
+</script>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="./favicon.ico">
+  <script src="react-0.14.0.js"></script>
+  <script src="react-dom-0.14.0.js"></script>
+  <script src="browser.min.js"></script>
+  <title>React 测试驱动</title>
+</head>
+
+<body>
+  <div id="example"></div>
+  <script type="text/babel">
+    var MyComponent = React.createClass({
+      handleClick: function() {
+        // Explicitly focus the text input using the raw DOM API.
+        this.refs.myTextInput.focus();
+      },
+      render: function() {
+        // The ref attribute adds a reference to the component to
+        // this.refs when the component is mounted.
+        return (
+          <div>
+            <input type="text" ref="myTextInput" />
+            <input
+              type="button"
+              value="Focus the text input"
+              onClick={this.handleClick}
+            />
+          </div>
+        );
+      }
+    });
+
+    ReactDOM.render(
+      <MyComponent />,
+      document.getElementById('example')
+    );
+  </script>
+</body>
+
+</html>

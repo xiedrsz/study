@@ -1,0 +1,77 @@
+@charset "UTF-8";
+
+/**
+ * 函数
+ */
+
+// 扩展, 用法见 readme.md
+@mixin print($declarations) {
+    @each $property,
+    $value in $declarations {
+        #{$property}: $value
+    }
+}
+
+// 一像素边框
+@mixin border($declarations:(border: 1px solid, border-radius: 5px)) {
+    @include print($declarations);
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+        position: relative;
+        border: 0;
+        &:before {
+            content: "";
+            width: 200%;
+            height: 200%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            -webkit-transform: scale(.5);
+            -webkit-transform-origin: 0 0;
+            padding: 1px;
+            -webkit-box-sizing: border-box;
+            pointer-events: none;
+            @include print($declarations);
+        }
+    }
+}
+
+// 按钮
+@mixin button($option: ()) {
+    $default: (bdr: 4px, bgc: #1B9AF7, fw: 300, c: #fff, mg: 5px, fs: 12px, h: 30px, lh: 30px, pd: 0 30px, d: inline-block);
+    $option: map-merge($option, $default);
+    background-color: map-get($option, bgc);
+    border-color: map-get($option, bgc);
+    font-weight: map-get($option, fw);
+    border-radius: map-get($option, bdr);
+    color: map-get($option, c);
+    margin: map-get($option, mg);
+    font-size: map-get($option, fs);
+    height: map-get($option, h);
+    line-height: map-get($option, lh);
+    padding: map-get($option, pd);
+    font-family: "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    text-decoration: none;
+    text-align: center;
+    display: map-get($option, d);
+    cursor: pointer;
+    border: none;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transition-property: all;
+    transition-property: all;
+    -webkit-transition-duration: .3s;
+    transition-duration: .3s;
+    &:active {
+        background-color: #2798eb;
+        border-color: #2798eb;
+        color: #0880d7;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+        text-decoration: none;
+        -webkit-transition-duration: 0s;
+        transition-duration: 0s;
+        -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        outline: 0;
+    }
+}

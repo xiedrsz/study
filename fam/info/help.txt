@@ -1,0 +1,10 @@
+
+fam 为前端自动化构建工具
+
+  使用说明如下：
+	
+  fam 或 fam -help:        展示 fam 帮助文档
+	
+  fam -v 或 fam -version:  展示 fam 当前版本号
+	
+  fam build:               用于构建 fam 工程

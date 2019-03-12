@@ -1,0 +1,13 @@
+$color #000;
+
+/**
+ * 一像素边框
+ */
+
+// 分辨率为1
+$list top bottom right left;
+@each $where in $list {
+	.border-#{$where} {
+		border-#{$where}: 1px solid $color;
+	}
+}
