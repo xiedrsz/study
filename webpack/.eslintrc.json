@@ -1,0 +1,43 @@
+{
+  "extends": "eslint:recommended",
+  "parser": "babel-eslint",
+  "rules": {
+      "quotes": ["error", "single"],
+      "no-empty": "error",
+      "no-console": "off",
+      "no-extra-semi": "error",
+      "eqeqeq": ["error", "always"],
+      "curly": "error",
+      "indent": ["error", 2],
+      "block-spacing": "error",
+      "brace-style": "error",
+      "comma-dangle": ["error", "never"],
+      "comma-spacing": ["error", { "before": false, "after": true }],
+      "computed-property-spacing": ["error", "never"],
+      "func-call-spacing": ["error", "never"],
+      "key-spacing": ["error", { "beforeColon": false }],
+      "keyword-spacing": ["error", { "before": true, "after": true }],
+      "linebreak-style": ["error", "unix"],
+      "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1, "maxBOF": 1 }],
+      "no-trailing-spaces": "error",
+      "object-curly-spacing": ["error", "never"],
+      "one-var": ["error", {"initialized": "never"}],
+      "padded-blocks": ["error", "never"],
+      "semi-spacing": "error",
+      "space-before-blocks": "error",
+      "space-before-function-paren": ["error", "always"],
+      "spaced-comment": ["error", "always"],
+      "switch-colon-spacing": "error"
+  },
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "module": true,
+    "define": true,
+    "Promise": true,
+    "wx": true,
+    "require": true,
+    "__dirname": true
+  }
+}
