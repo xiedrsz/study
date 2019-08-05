@@ -149,31 +149,6 @@ webpack 最出色的功能之一就是，除了 JavaScript，还可以通过 loa
 * clean-webpack-plugin:  清理
 * webpack-manifest-plugin:  Manifest
 
-如：
-``` diff
-// webpack.config.js
-const path = require('path');
-+const HtmlWebpackPlugin = require('html-webpack-plugin');
-+const CleanWebpackPlugin = require('clean-webpack-plugin');
-
-module.exports = {
-  entry: {
-    app: './src/index.js',
-    print: './src/print.js'
-  },
-  plugins: [
-+   new CleanWebpackPlugin(['dist']),
-+   new HtmlWebpackPlugin({
-+     title: 'Output Management'
-+   })
-  ],
-  output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist')
-  }
-};
-```
-
 ## 开发
 
 在我们继续之前，先来看看如何建立一个开发环境，使我们的开发变得更容易一些。
@@ -182,7 +157,7 @@ module.exports = {
 本指南中的工具<b>仅用于开发环境</b>，请不要在生产环境中使用它们！
 </div>
 
-* ### 使用 source map
+### 使用 source map
 
 为了更容易地追踪错误和警告，JavaScript 提供了 source map 功能，将编译后的代码映射回原始源代码。如果一个错误来自于 b.js，source map 就会明确的告诉你。
 
@@ -211,7 +186,7 @@ module.exports = {
 };
 ```
 
-* ### 选择一个开发工具
+### 选择一个开发工具
 
 每次要编译代码时，手动运行 `npm run build` 就会变得很麻烦。
 webpack 中有几个不同的选项，可以帮助你在代码发生变化后自动编译代码：
@@ -219,7 +194,7 @@ webpack 中有几个不同的选项，可以帮助你在代码发生变化后自
 2. webpack-dev-server
 3. webpack-dev-middleware
 
-* #### 使用观察模式
+#### 使用观察模式
 
 你可以指示 webpack "watch" 依赖图中的所有文件以进行更改。如果其中一个文件被更新，代码将被重新编译，所以你不必手动运行整个构建。
 
@@ -247,7 +222,7 @@ webpack 中有几个不同的选项，可以帮助你在代码发生变化后自
 }
 ```
 
-* #### 使用 webpack-dev-server
+#### 使用 webpack-dev-server
 
 `webpack-dev-server` 为你提供了一个简单的 web 服务器，并且能够实时重新加载(live reloading)。
 
@@ -294,12 +269,174 @@ module.exports = {
 }
 ```
 
-* #### 使用 webpack-dev-middleware
+#### 使用 webpack-dev-middleware
 
 `webpack-dev-middleware` 是一个容器(wrapper)，它可以把 webpack 处理后的文件传递给一个服务器(server)。 webpack-dev-server 在内部使用了它，同时，它也可以作为一个单独的包来使用，以便进行更多自定义设置来实现更多的需求。
 
+**webpack.config.js**
+``` diff
+const path = require('path');
++const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+module.exports = {
+  entry: './src/index.js',
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist'
+  },
++ plugins: [
++   new HtmlWebpackPlugin({
++     title: 'Output Management'
++   })
++ ],
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
++   publicPath: '/'
+  }
+};
+```
 
+**server.js**
+``` js
+const express = require('express');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+
+const app = express();
+const config = require('./webpack.config.js');
+const compiler = webpack(config);
+
+// Tell express to use the webpack-dev-middleware and use the webpack.config.js
+// configuration file as a base.
+app.use(webpackDevMiddleware(compiler, {
+  publicPath: config.output.publicPath
+}));
+
+// Serve the files on port 3000.
+app.listen(3000, function () {
+  console.log('Example app listening on port 3000!\n');
+});
+```
+
+**package.json**
+``` diff
+{
+  "name": "webpack_study",
+  "version": "1.0.0",
+  "description": "学习webpack",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "start": "webpack-dev-server --open",
++   "server": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
++   "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.37.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15"
+  }
+}
+```
+
+## 模块热替换
+
+模块热替换(Hot Module Replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。
+
+<div style="background-color:#fbedb7;color:#8c8466;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+<b>HMR</b> 不适用于生产环境，这意味着它应当只在开发环境使用。
+</div>
+
+### 启用 HMR
+
+启用此功能实际上相当简单。而我们要做的，就是更新 webpack-dev-server 的配置，和使用 webpack 内置的 HMR 插件。
+
+<div style="background-color:#DCF2FD;color:#618ca0;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+如果你使用了 <code>webpack-dev-middleware</code> 而没有使用 webpack-dev-server，请使用 <code><font color="#2086d7">webpack-hot-middleware</font></code> package 包，以在你的自定义服务或应用程序上启用 HMR。
+</div>
+
+######
+
+__webpack.config.js__
+``` diff
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
++const webpack = require('webpack');
+
+module.exports = {
+  // 入口
+  entry: './src/index.js',
+  // 配置 source-map
+  devtool: 'inline-source-map',
+  // webpack-dev-server 配置
+  devServer: {
+    contentBase: './dist',
++   hot: true
+  },
+  // 插件
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Output Management'
+    }),
++   new webpack.NamedModulesPlugin(),
++   new webpack.HotModuleReplacementPlugin()
+  ],
+  // 输出
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+    // webpack-dev-middleware 配置
+    publicPath: '/'
+  }
+};
+```
+<div style="background-color:#DCF2FD;color:#618ca0;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+你可以通过命令来修改 <font color="#2086d7">webpack-dev-server</font> 的配置：<code>webpack-dev-server --hotOnly</code>
+</div>
+
+######
+
+注意，我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
+
+__index.js__
+``` diff
+import _ from 'lodash'
+import printMe from './print'
+function component (...args) {
+  var element = document.createElement('div');
+  element.innerHTML = _.join(args, ' ');
+  return element;
+}
+
+document.body.appendChild(component(['Hello', 'webpack', 'server']));
+
++if (module.hot) {
++ module.hot.accept('./print.js', function () {
++   console.log('Accepting the updated printMe module!');
++   printMe();
++ })
++}
+```
+
+### 通过 Node.js API
+
+当使用 webpack dev server 和 Node.js API 时，不要将 dev server 选项放在 webpack 配置对象(webpack config object)中。而是，在创建选项时，将其作为第二个参数传递。例如：
+
+``` js
+new WebpackDevServer(compiler, options)
+```
+
+想要启用 HMR，还需要修改 webpack 配置对象，使其包含 HMR 入口起点。webpack-dev-server package 中具有一个叫做 `addDevServerEntrypoints` 的方法，你可以通过使用这个方法来实现。这是关于如何使用的一个小例子：
+
+https://u.wechat.com/MKZy_lF8Ue-F2LmeexZ4-fo
 
 --- 
 * 安装 webpack 依赖
