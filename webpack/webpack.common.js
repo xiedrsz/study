@@ -1,14 +1,13 @@
 const path = require('path');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
-    index: './src/index.js',
-    another: './src/another.js'
+    app: './src/index.js'
   },
   plugins: [
-    new HTMLWebpackPlugin({
-      title: 'Code Splitting'
+    new HtmlWebpackPlugin({
+      title: 'Production'
     })
   ],
   output: {

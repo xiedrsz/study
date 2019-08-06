@@ -38,6 +38,7 @@
     "Promise": true,
     "wx": true,
     "require": true,
-    "__dirname": true
+    "__dirname": true,
+    "process": true
   }
 }

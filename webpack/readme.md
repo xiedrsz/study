@@ -436,7 +436,179 @@ new WebpackDevServer(compiler, options)
 
 想要启用 HMR，还需要修改 webpack 配置对象，使其包含 HMR 入口起点。webpack-dev-server package 中具有一个叫做 `addDevServerEntrypoints` 的方法，你可以通过使用这个方法来实现。这是关于如何使用的一个小例子：
 
-https://u.wechat.com/MKZy_lF8Ue-F2LmeexZ4-fo
+__dev-server.js__
+``` js
+const webpackDevServer = require('webpack-dev-server');
+const webpack = require('webpack');
+
+const config = require('./webpack.config.js');
+const options = {
+  contentBase: './dist',
+  hot: true,
+  host: 'localhost',
+  open: true
+};
+
+webpackDevServer.addDevServerEntrypoints(config, options);
+const compiler = webpack(config);
+const server = new webpackDevServer(compiler, options);
+
+server.listen(5000, 'localhost', () => {
+  console.log('dev server listening on port 5000');
+});
+```
+
+<div style="background-color:#DCF2FD;color:#618ca0;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+如果你在使用 <font color="#2086d7">webpack-dev-middleware</font>，可以通过 <font color="#2086d7">webpack-hot-middleware</font> package 包，在自定义开发服务下启用 HMR。
+</div>
+
+## tree shaking
+
+tree shaking 是一个术语，通常用于描述移除 JavaScript 上下文中的未引用代码(dead-code)。它依赖于 ES2015 模块系统中的静态结构特性，例如 import 和 export。这个术语和概念实际上是兴起于 ES2015 模块打包工具 rollup。
+
+新的 webpack 4 正式版本，扩展了这个检测能力，通过 package.json 的 "sideEffects" 属性作为标记，向 compiler 提供提示，表明项目中的哪些文件是 "pure(纯的 ES2015 模块)"，由此可以安全地删除文件中未使用的部分。
+
+__Todo__
+试验都默认已开启，无法关闭。[点我](https://www.webpackjs.com/guides/tree-shaking/)查看教程。
+
+## 生产环境构建
+
+### 配置
+
+开发环境(development)和生产环境(production)的构建目标差异很大。在开发环境中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在生产环境中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
+
+但是，请注意，我们还是会遵循不重复原则(Don't repeat yourself - DRY)，保留一个“通用”配置。为了将这些配置合并在一起，我们将使用一个名为 `webpack-merge` 的工具。通过“通用”配置，我们不必在环境特定(environment-specific)的配置中重复代码。
+
+__webpack.common.js__
+``` js
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: {
+    app: './src/index.js'
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Production'
+    })
+  ],
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  }
+};
+```
+
+__webpack.dev.js__
+``` js
+const merge = require('webpack-merge');
+const common = require('./webpack.common.js');
+
+module.exports = merge(common, {
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist'
+  }
+});
+```
+
+__webpack.prod.js__
+``` js
+const webpack = require('webpack');
+const merge = require('webpack-merge');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const common = require('./webpack.common.js');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+
+module.exports = merge(common, {
+  plugins: [
+    new CleanWebpackPlugin(),
+    new UglifyJSPlugin({
+      sourceMap: true
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production')
+    })
+  ]
+});
+```
+
+__package.json__
+``` diff
+{
+  "name": "webpack_study",
+  "version": "1.0.0",
+  "description": "学习webpack",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+-    "build": "webpack",
++    "build": "webpack --config webpack.prod.js",
+    "watch": "webpack --watch",
+-    "start": "webpack-dev-server --open",
++    "start": "webpack-dev-server --open --config webpack.dev.js",
+    "server": "node server.js",
+    "dev": "node dev-server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.37.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-merge": "^4.2.1"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "lodash": "^4.17.15",
+    "save-dev": "^2.0.0",
+    "uglifyjs-webpack-plugin": "^2.2.0"
+  }
+}
+```
+
+## 代码分离
+
+代码分离是 webpack 中最引人注目的特性之一。此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
+
+有三种常用的代码分离方法：
+* 入口起点：使用 entry 配置手动地分离代码。
+* 防止重复：使用 CommonsChunkPlugin 去重和分离 chunk。
+* 动态导入：通过模块的内联函数调用来分离代码。
+
+### 入口起点(entry points)
+
+这是迄今为止最简单、最直观的分离代码的方式。
+
+__webpack.config.js__
+```js
+const path = require('path');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: {
+    index: './src/index.js',
+    another: './src/another.js'
+  },
+  plugins: [
+    new HTMLWebpackPlugin({
+      title: 'Code Splitting'
+    })
+  ],
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  }
+};
+```
+
+
+
+
+
+
 
 --- 
 * 安装 webpack 依赖
