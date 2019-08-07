@@ -1,30 +1,20 @@
 const path = require('path');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
-  mode: 'production',
   entry: './src/index.js',
-  plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      title: 'Caching'
-    })
-  ],
   output: {
-    filename: '[name].[chunkhash].js',
+    filename: 'bundle1.js',
     path: path.resolve(__dirname, 'dist')
   },
-  optimization: {
-    runtimeChunk: 'single',
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
-    }
-  }
+  plugins: [
+    new HTMLWebpackPlugin({
+      title: 'Code Splitting'
+    }),
+    new webpack.ProvidePlugin({
+      // _: 'lodash'
+      join: ['lodash', 'join']
+    })
+  ]
 };

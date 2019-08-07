@@ -1,2 +1,7 @@
-import _ from 'lodash'
-console.log('我没改变')
+function component () {
+  var element = document.createElement('div');
+  element.innerHTML = join(['Hello', 'webpack'], ' ');
+  return element;
+}
+
+document.body.appendChild(component());
