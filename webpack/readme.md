@@ -604,6 +604,243 @@ module.exports = {
 };
 ```
 
+### 防止重复(prevent duplication)
+
+`CommonsChunkPlugin` 插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。让我们使用这个插件，将之前的示例中重复的 lodash 模块去除：
+
+__webpack.config.js__
+``` diff
+const path = require('path');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: {
+    index: './src/index.js',
+    another: './src/another.js'
+  },
+  plugins: [
+    new HTMLWebpackPlugin({
+      title: 'Code Splitting'
+    })
+  ],
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  },
++ optimization: {
++   splitChunks: {
++     chunks: 'all'
++   }
++ }
+};
+```
+
+以下是由社区提供的，一些对于代码分离很有帮助的插件和 loaders：
+* mini-css-extract-plugin: 用于将 CSS 从主应用程序中分离。
+* bundle-loader:  用于分离代码和延迟加载生成的 bundle。
+* promise-loader: 类似于 bundle-loader ，但是使用的是 promises。
+
+### 动态导入(dynamic imports)
+
+当涉及到动态代码拆分时，webpack 提供了两个类似的技术。对于动态导入，第一种，也是优先选择的方式是，使用符合 ECMAScript 提案 的 import() 语法。第二种，则是使用 webpack 特定的 require.ensure。让我们先尝试使用第一种……
+
+<div style="background-color:#fbedb7;color:#8c8466;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+<code>import()</code> 调用会在内部用到 promises。如果在旧有版本浏览器中使用 <code>import()</code>，记得使用 一个 polyfill 库（例如 es6-promise 或 promise-polyfill），来 shim Promise。
+</div>
+
+######
+
+__webpack.config.js__
+``` js
+const path = require('path');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: {
+    index: './src/index.js'
+  },
+  plugins: [
+    new HTMLWebpackPlugin({
+      title: 'Code Splitting'
+    })
+  ],
+  output: {
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  }
+};
+```
+
+__index.js__
+``` js
+function getComponent () {
+  return import(/* webpackChunkName: "lodash" */ 'lodash').then(_ => {
+    var element = document.createElement('div');
+
+    element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+
+    return element;
+  }).catch(error => `An error occurred while loading the component: ${error}`);
+}
+
+getComponent().then(component => {
+  document.body.appendChild(component);
+})
+```
+
+### bundle 分析(bundle analysis)
+
+* [官方分析工具](https://github.com/webpack/analyse)
+* [webpack-chart](https://alexkuz.github.io/webpack-chart/): webpack 数据交互饼图。
+* [webpack-visualizer](https://chrisbateman.github.io/webpack-visualizer/): 可视化并分析你的 bundle，检查哪些模块占用空间，哪些可能是重复使用的。
+* [webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer): 一款分析 bundle 内容的插件及 CLI 工具，以便捷的、交互式、可缩放的树状图形式展现给用户。
+
+## 懒加载
+
+懒加载或者按需加载，是一种很好的优化网页或应用的方式。这种方式实际上是先把你的代码在一些逻辑断点处分离开，然后在一些代码块中完成某些操作后，立即引用或即将引用另外一些新的代码块。这样加快了应用的初始加载速度，减轻了它的总体体积，因为某些代码块可能永远不会被加载。
+
+### 示例
+
+__print.js__
+``` js
+console.log('The print.js module has loaded! See the network tab in dev tools...');
+
+export default () => {
+  console.log('Button Clicked: Here\'s "some text"!');
+}
+```
+
+__index.js__
+``` js
+import _ from 'lodash';
+
+function component () {
+  var element = document.createElement('div');
+  var button = document.createElement('button');
+  var br = document.createElement('br');
+
+  button.innerHTML = 'Click me and look at the console!';
+  element.innerHTML = _.join(['Hello', 'webpack'], ' ');
+  element.appendChild(br);
+  element.appendChild(button);
+
+  // Note that because a network request is involved, some indication
+  // of loading would need to be shown in a production-level site/app.
+  button.onclick = e => import(/* webpackChunkName: "print" */ './print').then(module => {
+    var print = module.default;
+
+    print();
+  });
+
+  return element;
+}
+
+document.body.appendChild(component());
+```
+
+## 缓存
+
+### 输出文件的文件名(Output Filenames)
+
+通过使用 `output.filename` 进行文件名替换，可以确保浏览器获取到修改后的文件。
+
+__webpack.config.js__
+```js
+const path = require('path');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/index.js',
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: 'Caching'
+    })
+  ],
+  output: {
+    filename: '[name].[chunkhash].js',
+    path: path.resolve(__dirname, 'dist')
+  }
+};
+```
+
+<div style="background-color:#fbedb7;color:#8c8466;font-style:italic;font-size:.8em;border-radius:4px;padding:1em;font-weight:200;">
+此方案在代码修改时文件名也会跟着修改，但代码未修改时文件名可能也会被改变，另外输出可能会因当前的 webpack 版本而稍有差异。新版本不一定有和旧版本相同的 hash 问题，但我们以下推荐的步骤，仍然是可靠的。
+</div>
+
+### 提取模板(Extracting Boilerplate)
+
+As we learned in code splitting, the SplitChunksPlugin can be used to split modules out into separate bundles. webpack provides an optimization feature to split runtime code into a separate chunk using the `optimization.runtimeChunk` option. Set it to single to create a single runtime bundle for all chunks:
+
+__webpack.config.js__
+``` diff
+const path = require('path');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/index.js',
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: 'Caching'
+    })
+  ],
+  output: {
+    filename: '[name].[chunkhash].js',
+    path: path.resolve(__dirname, 'dist')
+  },
++ optimization: {
++   runtimeChunk: 'single'
++ }
+};
+```
+
+It's also good practice to extract third-party libraries, such as lodash or react, to a separate vendor chunk as they are less likely to change than our local source code. This step will allow clients to request even less from the server to stay up to date. This can be done by using the cacheGroups option of the SplitChunksPlugin demonstrated in Example 2 of SplitChunksPlugin. Lets add optimization.splitChunks with cacheGroups with next params and build:
+
+__webpack.config.js__
+``` diff
+const path = require('path');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  mode: 'production',
+  entry: './src/index.js',
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: 'Caching'
+    })
+  ],
+  output: {
+    filename: '[name].[chunkhash].js',
+    path: path.resolve(__dirname, 'dist')
+  },
+  optimization: {
+    runtimeChunk: 'single',
++   splitChunks: {
++     cacheGroups: {
++       vendor: {
++         test: /[\\/]node_modules[\\/]/,
++         name: 'vendors',
++         chunks: 'all'
++       }
++     }
++   }
+  }
+};
+```
+
+## 创建 library
+
+除了打包应用程序代码，webpack 还可以用于打包 JavaScript library。
+
+### 创建一个 library
+
+
 
 
 

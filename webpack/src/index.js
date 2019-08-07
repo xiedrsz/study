@@ -1,5 +1,2 @@
-import _ from 'lodash';
-
-console.log(
-  _.max([1, 2, 3, 4])
-);
+import _ from 'lodash'
+console.log('我没改变')
