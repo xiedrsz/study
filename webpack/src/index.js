@@ -1,7 +1,7 @@
-function component () {
-  var element = document.createElement('div');
-  element.innerHTML = join(['Hello', 'webpack'], ' ');
-  return element;
-}
+import ClipboardJS from 'clipboard'
 
-document.body.appendChild(component());
+new ClipboardJS('.btn');
+/* 
+new ClipboardJS('.btn', {
+  container: document.getElementById('modal')
+}); */
