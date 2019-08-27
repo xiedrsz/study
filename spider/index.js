@@ -21,4 +21,4 @@ var c = new Crawler({
   }
 });
 
-c.queue('http://cn.morningstar.com/article/AR00008776');
+c.queue('http://cn.morningstar.com/main/default.aspx');
