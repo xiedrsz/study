@@ -8,17 +8,18 @@ var c = new Crawler({
       console.log(err)
     } else {
       var $ = res.$;
-      var urls = $('a');
-      var url, text
+      var video = $('input');
+      console.log(video);
+      /* var url, text
       urls = urls.each(function () {
         url = this.attribs.href;
         url = new Url(url, 'http://cn.morningstar.com/article/AR00008776');
         url = url.toString()
         text = (this.lastChild || {}).nodeValue;
         console.log(text + ': ' + url);
-      })
+      }) */
     }
   }
 });
 
-c.queue('http://cn.morningstar.com/main/default.aspx');
+c.queue('http://bbcj.mengce.xyz/mine.html#/login');
