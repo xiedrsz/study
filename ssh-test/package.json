@@ -13,7 +13,7 @@
   "author": "xiedrsz",
   "license": "ISC",
   "devDependencies": {
-    "async": "^2.6.0",
+    "async": "^2.6.4",
     "ssh2": "^0.6.0"
   }
 }
